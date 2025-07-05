@@ -1,0 +1,18 @@
+{
+    "signup" : {
+        "Register" : "Register",
+        "Email" : "Email",
+        "Password" : "Password",
+        "fullname" : "Full Name"
+    },
+
+     "Android": "أندرويد",
+
+    "error" : {
+        "weak-password" : "The password provided is too weak.",
+        "email-already-in-use" : "The account already exists for that email.",
+        "network-request-failed" : "Network error, please check your internet connection."
+    }
+    
+
+}
