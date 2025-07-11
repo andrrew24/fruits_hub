@@ -1,8 +1,10 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:fruits_hub/core/helper_functions/applesignin_helper_funs.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fruits_hub/core/exception/custom_exception.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart' hide generateNonce;
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -154,4 +156,43 @@ class FirebaseAuthService {
       }
     }
   }
+
+
+  Future<User> signInWithApple() async {
+  try {
+  final rawNonce = generateNonce();
+  final nonce = sha256ofString(rawNonce);
+  final appleCredential = await SignInWithApple.getAppleIDCredential(
+    scopes: [
+      AppleIDAuthorizationScopes.email,
+      AppleIDAuthorizationScopes.fullName,
+    ],
+    nonce: nonce,
+  );
+  
+  final oauthCredential = OAuthProvider("apple.com").credential(
+    idToken: appleCredential.identityToken,
+    rawNonce: rawNonce,
+  );
+  
+
+  return (await FirebaseAuth.instance.signInWithCredential(oauthCredential)).user!;
+} on FirebaseAuthException catch (e) {
+      log('FirebaseAuthException: ${e.code}, Message: ${e.message}');
+      if (e.code == 'account-exists-with-different-credential') {
+        throw CustomException(
+          'An account already exists with a different sign-in method. Try using email/password or another provider.',
+        );
+      } else if (e.code == "network-request-failed") {
+        throw CustomException(
+          'Network error, please check your internet connection.',
+        );
+      } else {
+        throw CustomException('Google sign-in error: ${e.message}');
+      }
+    } catch (e) {
+      log('Error during email sign-in: $e');
+      throw CustomException('An unknown error occurred: ${e.toString()}');
+    }
+}
 }

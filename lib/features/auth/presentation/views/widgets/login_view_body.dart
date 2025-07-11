@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fruits_hub/constants.dart';
@@ -100,11 +102,13 @@ class _LoginViewBodyState extends State<LoginViewBody> {
                   title: 'تسجيل بواسطة جوجل',
                 ),
                 const SizedBox(height: 16),
-                SocialLoginButton(
-                  onPressed: () {},
+                 Platform.isIOS ? SocialLoginButton(
+                  onPressed: () {
+                    // context.read<LoginCubit>().loginWithApple();
+                  },
                   image: Assets.imagesApplIcon,
                   title: 'تسجيل بواسطة أبل',
-                ),
+                ): SizedBox(),
                 const SizedBox(height: 16),
                 SocialLoginButton(
                   onPressed: () {

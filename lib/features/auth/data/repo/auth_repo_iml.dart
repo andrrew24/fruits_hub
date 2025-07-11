@@ -152,6 +152,39 @@ class AuthRepoIml implements AuthRepo {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> signInWithApple() async{
+    User? user;
+    try {
+      user = await firebaseAuthService.signInWithApple();
+
+      UserEntity userEntity = UserEntity(email: user.email!, uid: user.uid, fullName: user.displayName!);
+
+      bool userExists = await databaseService.checkIfDataExists(
+        path: BackendEndpoints.usersCollection,
+        uid: user.uid,
+      );
+
+      if (!userExists) {
+        await saveUserInDatabase(userEntity: userEntity);
+      }
+
+      await databaseService.getData(
+        path: BackendEndpoints.usersCollection,
+        uid: user.uid,
+      );
+
+      return Right(userEntity);
+    }on CustomException catch (e) {
+      await deleteUser(user);
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      await deleteUser(user);
+      return Left(ServerFailure('An error occurred, please try again later.'));
+    }
+  }
+
+
+  @override
   Future saveUserInDatabase({required UserEntity userEntity}) async {
     return await databaseService.addData(
       uid: userEntity.uid,
@@ -175,4 +208,6 @@ class AuthRepoIml implements AuthRepo {
       }
     }
   }
+  
+  
 }
